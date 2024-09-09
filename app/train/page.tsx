@@ -19,14 +19,6 @@ export default function TrainPage() {
     }
   }, [])
 
-  if (!session) {
-    return <Login />
-  }
-
-  return <Upload session={session} />
-}
-
-function Login() {
   const handleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'github', // or any other provider you're using
@@ -34,5 +26,9 @@ function Login() {
     if (error) console.error('Error logging in:', error)
   }
 
-  return <button onClick={handleLogin}>Login</button>
+  if (!session) {
+    return <Login onLogin={handleLogin} />
+  }
+
+  return <Upload session={session} />
 }
