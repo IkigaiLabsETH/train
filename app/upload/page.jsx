@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import Image from 'next/image'
-import { Session } from '@supabase/supabase-js'
 
 export default function UploadPage() { // Renamed to UploadPage
   const [imageFile, setImageFile] = useState(null)
