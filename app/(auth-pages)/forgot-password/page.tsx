@@ -6,12 +6,11 @@ import Label from '../../components/ui/label'
 import Link from "next/link";
 import { SmtpMessage } from "../smtp-message";
 import { Metadata } from 'next'
-import { ReadonlyURLSearchParams } from 'next/navigation'
 
 export default function ForgotPassword({
   searchParams,
 }: {
-  searchParams: ReadonlyURLSearchParams
+  searchParams: { [key: string]: string | string[] | undefined }
 }) {
   return (
     <>
@@ -27,14 +26,19 @@ export default function ForgotPassword({
         </div>
         <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8">
           <Label htmlFor="email">Email</Label>
-          <Input type="email" name="email" placeholder="you@example.com" required />
-          <SubmitButton onClick={undefined}>
+          <Input id="email" type="email" name="email" placeholder="you@example.com" required />
+          <SubmitButton>
             Reset Password
           </SubmitButton>
-          <FormMessage message={searchParams} />
+          <FormMessage message={searchParams.message} />
         </div>
       </form>
       <SmtpMessage />
     </>
   );
 }
+
+export const metadata: Metadata = {
+  title: 'Forgot Password',
+  description: 'Reset your password',
+};
