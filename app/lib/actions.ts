@@ -9,22 +9,22 @@ export const signUpAction = async (formData: FormData) => {
   // Your sign-up logic here
 };
 
-// Commenting out the sign-in flow
+// Restore the sign-in flow
 export const signInAction = async (formData: FormData) => {
-  // const email = formData.get("email") as string;
-  // const password = formData.get("password") as string;
-  // const supabase = createClient();
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const supabase = createClient();
 
-  // const { error } = await supabase.auth.signInWithPassword({
-  //   email,
-  //   password,
-  // });
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-  // if (error) {
-  //   return encodedRedirect("error", "/sign-in", error.message);
-  // }
+  if (error) {
+    return encodedRedirect("error", "/sign-in", error.message);
+  }
 
-  // return redirect("/protected");
+  return redirect("/protected");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {

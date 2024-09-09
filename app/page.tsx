@@ -13,8 +13,8 @@ export default function Home() {
           height={38}
           priority
         />
-        <h1 className="text-4xl font-bold mb-4">Welcome to Our AI Training Platform</h1>
-        <p className="text-xl mb-8">Start training your AI model with just a few clicks.</p>
+        <h1 className="text-4xl font-bold mb-4">AI ART Training</h1>
+        <p className="text-xl mb-8">Start training your AI model.</p>
         <Link
           href="/train"
           className="rounded-full bg-blue-500 text-white px-8 py-3 text-lg font-semibold hover:bg-blue-600 transition-colors"
@@ -24,7 +24,7 @@ export default function Home() {
       </main>
       <footer className="mt-16 text-center">
         <p className="text-sm text-gray-600">
-          Powered by Next.js and AI technologies
+          Powered by LiveTheLifeTV
         </p>
       </footer>
     </div>
