@@ -1,15 +1,22 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import Replicate from 'replicate' // Add this import
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const replicateApiToken = process.env.REPLICATE_API_TOKEN
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+if (!supabaseUrl || !supabaseAnonKey || !replicateApiToken) {
+  throw new Error('Missing environment variables');
 }
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+// Initialize Replicate client
+const replicate = new Replicate({
+  auth: replicateApiToken,
+});
 
 export async function POST(request: Request) {
   try {
@@ -20,50 +27,68 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
     }
 
+    const bucketName = 'user-uploads'
+
+    // Check if the bucket exists
+    const { data: buckets, error: listError } = await supabase.storage.listBuckets()
+    
+    if (listError) {
+      console.error('Error listing buckets:', listError)
+      return NextResponse.json({ error: `Error listing buckets: ${listError.message}` }, { status: 500 })
+    }
+
+    const bucketExists = buckets.some(bucket => bucket.name === bucketName)
+    
+    if (!bucketExists) {
+      console.error(`Bucket '${bucketName}' not found`)
+      return NextResponse.json({ error: `Bucket '${bucketName}' not found` }, { status: 500 })
+    }
+
     // Upload the image to Supabase
     const { data, error } = await supabase.storage
-      .from('user-uploads')
+      .from(bucketName)
       .upload(`public/${file.name}`, file)
 
     if (error) {
+      console.error('Error uploading file:', error)
       return NextResponse.json({ error: `Error uploading file: ${error.message}` }, { status: 500 })
     }
 
-    // Trigger the model inference on Replicate's Flux Pro model
-    const replicateResponse = await trainFluxProModel(data.path)
-    if (replicateResponse.error) {
-      return NextResponse.json({ error: `Error training model: ${replicateResponse.error}` }, { status: 500 })
-    }
+    // Get public URL of the uploaded file
+    const { data: publicUrlData } = supabase.storage
+      .from(bucketName)
+      .getPublicUrl(`public/${file.name}`)
 
-    return NextResponse.json({ message: 'File uploaded and model training started successfully', path: data.path })
+    return NextResponse.json({ success: true, url: publicUrlData.publicUrl })
+
   } catch (error) {
-    console.error('Server-side error:', error)
-    return NextResponse.json(
-      { error: 'An error occurred', details: (error as Error).message },
-      { status: 500 }
-    )
+    console.error('Unexpected error:', error)
+    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 })
   }
 }
 
-// Function to call Replicate API for Flux Pro model
-async function trainFluxProModel(imagePath: string) {
+// Function to train Flux Pro model
+async function trainFluxProModel(imagePath: string, model: any) {
   try {
-    const response = await fetch('https://api.replicate.com/v1/predictions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        version: "b9b23575b1459c85f3d468da89ee3e26bf25a64a9b7fffa4cb89a7eecb0f4c09", // Flux Pro version ID
-        input: {
-          image: supabase.storage.from('user-uploads').getPublicUrl(imagePath).data.publicUrl,
-          // Add any additional input parameters needed for the model
-        }
-      })
-    })
+    const publicUrl = supabase.storage.from('user-uploads').getPublicUrl(imagePath).data.publicUrl
 
-    return await response.json()
+    // Start the training process
+    const training = await replicate.trainings.create(
+      "ostris/flux-dev-lora-trainer:4ffd32160efd92e956d39c5338a9b8fbafca58e03f791f6d8011f3e20e8ea6fa",
+      {
+        input: {
+          input_images: publicUrl,
+          steps: 1000,
+          // Add other required input parameters
+        },
+        destination: `${model.owner}/${model.name}`,
+      }
+    );
+
+    console.log(`Training started: ${training.status}`)
+    console.log(`Training URL: https://replicate.com/p/${training.id}`)
+
+    return training
   } catch (error) {
     return { error }
   }
