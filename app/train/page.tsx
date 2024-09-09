@@ -10,22 +10,29 @@ export default function TrainPage() {
   const [session, setSession] = useState<Session | null>(null)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
     })
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
-
-    return () => subscription.unsubscribe()
+    return () => {
+      authListener.subscription.unsubscribe()
+    }
   }, [])
 
   if (!session) {
-    return <Login onLogin={() => supabase.auth.getSession().then(({ data: { session } }) => setSession(session))} />
+    return <Login />
   }
 
   return <Upload session={session} />
+}
+
+function Login() {
+  const handleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'github', // or any other provider you're using
+    })
+    if (error) console.error('Error logging in:', error)
+  }
+
+  return <button onClick={handleLogin}>Login</button>
 }
