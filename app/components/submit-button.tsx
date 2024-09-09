@@ -1,14 +1,16 @@
 "use client";
 
-import { ReactNode } from 'react';
+import React from 'react';
 
 interface SubmitButtonProps {
-  onClick?: () => void;
-  children: ReactNode;
+  children: React.ReactNode;
   pendingText: string;
 }
 
-export function SubmitButton({ children, pendingText }: SubmitButtonProps) {
-  // Implement the component using the pendingText prop
-  // ...
-}
+export const SubmitButton: React.FC<SubmitButtonProps> = ({ children, pendingText }) => {
+  return (
+    <button type="submit">
+      {children}
+    </button>
+  );
+};
