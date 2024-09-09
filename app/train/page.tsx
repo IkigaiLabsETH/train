@@ -10,6 +10,7 @@ export default function TrainPage() {
   const [result, setResult] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [session, setSession] = useState<Session | null>(null)
+  const [email, setEmail] = useState('')
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -62,6 +63,35 @@ export default function TrainPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const { error } = await supabase.auth.signInWithOtp({ email })
+    if (error) setError(`Error logging in: ${error.message}`)
+    else setResult('Check your email for the login link!')
+  }
+
+  if (!session) {
+    return (
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Sign In</h1>
+        <form onSubmit={handleLogin} className="mb-4">
+          <input
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="border p-2 mr-2"
+          />
+          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
+            Login
+          </button>
+        </form>
+        {error && <p className="text-red-500">Error: {error}</p>}
+        {result && <p className="text-green-500">{result}</p>}
+      </div>
+    )
   }
 
   return (
