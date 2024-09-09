@@ -29,6 +29,12 @@ export async function POST(request: Request) {
 
     const bucketName = 'user-uploads'
 
+    // Check if bucket exists, create if it doesn't
+    const { data: bucketData } = await supabase.storage.getBucket(bucketName)
+    if (!bucketData) {
+      await supabase.storage.createBucket(bucketName, { public: true })
+    }
+
     // Check if the bucket exists
     const { data: buckets, error: listError } = await supabase.storage.listBuckets()
     
@@ -62,19 +68,21 @@ export async function POST(request: Request) {
       .from(bucketName)
       .getPublicUrl(`public/${file.name}`)
 
-    return NextResponse.json({ success: true, url: publicUrlData.publicUrl })
+    // Use Replicate to process the image
+    const output = await replicate.run(
+      "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
+      {
+        input: {
+          image: publicUrlData.publicUrl,
+          prompt: "Enhance this image"
+        }
+      }
+    );
+
+    return NextResponse.json({ success: true, url: publicUrlData.publicUrl, processedImage: output })
 
   } catch (error) {
     console.error('Unexpected error:', error)
     return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 })
   }
-}
-
-// Function to train Flux Pro model
-// If trainFluxProModel is not used, remove it
-// If it's used elsewhere, add a comment to disable the ESLint rule
-// @ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function trainFluxProModel(data: unknown): Promise<void> {
-  // Implementation here
 }
