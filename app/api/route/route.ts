@@ -30,24 +30,18 @@ export async function POST(request: Request) {
     const bucketName = 'user-uploads'
 
     // Check if bucket exists, create if it doesn't
-    const { data: bucketData } = await supabase.storage.getBucket(bucketName)
-    if (!bucketData) {
-      await supabase.storage.createBucket(bucketName, { public: true })
-    }
+    const { data: buckets, error: listBucketsError } = await supabase.storage.listBuckets()
 
-    // Check if the bucket exists
-    const { data: buckets, error: listError } = await supabase.storage.listBuckets()
-    
-    if (listError) {
-      console.error('Error listing buckets:', listError)
-      return NextResponse.json({ error: `Error listing buckets: ${listError.message}` }, { status: 500 })
+    if (listBucketsError) {
+      console.error('Error listing buckets:', listBucketsError)
+      // Handle the error appropriately
+      return
     }
 
     const bucketExists = buckets.some(bucket => bucket.name === bucketName)
-    
+
     if (!bucketExists) {
-      console.error(`Bucket '${bucketName}' not found`)
-      return NextResponse.json({ error: `Bucket '${bucketName}' not found` }, { status: 500 })
+      await supabase.storage.createBucket(bucketName, { public: true })
     }
 
     // Upload the image to Supabase
