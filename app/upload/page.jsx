@@ -29,7 +29,7 @@ export default function UploadPage() { // Renamed to UploadPage
     if (!session) return setUploadStatus('Please sign in to upload.')
 
     try {
-      const bucketName = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || 'user-uploads'
+      const bucketName = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || 'uploads'
 
       const { data, error } = await supabase.storage
         .from(bucketName)

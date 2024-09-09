@@ -6,7 +6,7 @@ import Label from '../../components/ui/label'
 import Link from "next/link";
 
 // Update the prop type to be more specific
-export default function Login({ searchParams }: { searchParams: { message?: string } }) {
+export default function SignIn({ searchParams }: { searchParams: { message?: string } }) {
   return (
     // Add a more semantic structure with header and main tags
     <>
@@ -37,12 +37,7 @@ export default function Login({ searchParams }: { searchParams: { message?: stri
                   Forgot Password?
                 </Link>
               </div>
-              <Input
-                type="password"
-                value=""
-                onChange={() => {}}
-                // Remove id, name, placeholder, and required props
-              />
+              <Input id="password" name="password" type="password" placeholder="********" required />
             </div>
             <SubmitButton pendingText="Signing In...">
               Sign in
