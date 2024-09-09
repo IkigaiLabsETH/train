@@ -6,7 +6,20 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const signUpAction = async (formData: FormData) => {
-  // Your sign-up logic here
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const supabase = createClient();
+
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+  });
+
+  if (error) {
+    return encodedRedirect("error", "/sign-up", error.message);
+  }
+
+  return redirect("/protected");
 };
 
 // Restore the sign-in flow
