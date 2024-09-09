@@ -62,16 +62,29 @@ export async function POST(request: Request) {
       .from(bucketName)
       .getPublicUrl(`public/${file.name}`)
 
-    // Use Replicate to process the image
-    const output = await replicate.run(
-      "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
-      {
-        input: {
-          image: publicUrlData.publicUrl,
-          prompt: "Enhance this image"
+    // Before Replicate API call
+    console.log('Public URL:', publicUrlData.publicUrl);
+
+    let output;
+    try {
+      output = await replicate.run(
+        "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
+        {
+          input: {
+            image: publicUrlData.publicUrl,
+            prompt: "Enhance this image"
+          }
         }
-      }
-    );
+      );
+    } catch (error) {
+      console.error('Replicate API error:', error);
+      return NextResponse.json({ error: 'Error processing image' }, { status: 500 });
+    }
+
+    if (!output || typeof output !== 'object') {
+      console.error('Invalid Replicate output:', output);
+      return NextResponse.json({ error: 'Invalid response from image processing' }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true, url: publicUrlData.publicUrl, processedImage: output })
 
