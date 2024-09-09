@@ -13,6 +13,8 @@ export default function TrainPage() {
   const [email, setEmail] = useState('')
 
   useEffect(() => {
+    console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+    console.log('Supabase Anon Key:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
     })
@@ -67,9 +69,14 @@ export default function TrainPage() {
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const { error } = await supabase.auth.signInWithOtp({ email })
-    if (error) setError(`Error logging in: ${error.message}`)
-    else setResult('Check your email for the login link!')
+    try {
+      const { error } = await supabase.auth.signInWithOtp({ email })
+      if (error) throw error
+      setResult('Check your email for the login link!')
+    } catch (error) {
+      console.error('Login error:', error)
+      setError(`Error logging in: ${(error as Error).message}`)
+    }
   }
 
   if (!session) {
