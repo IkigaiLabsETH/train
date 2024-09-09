@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabaseClient'
 import Image from 'next/image'
 import { Session } from '@supabase/supabase-js'
 
-export default function Upload() {
+export default function UploadPage() { // Renamed to UploadPage
   const [imageFile, setImageFile] = useState(null)
   const [uploadStatus, setUploadStatus] = useState('')
   const [imageUrl, setImageUrl] = useState(null)
@@ -68,7 +68,4 @@ export default function Upload() {
       </div>
     </div>
   )
-}
-
-export default function Upload({ session }) {
 }
