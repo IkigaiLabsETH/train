@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import Image from 'next/image'
+import { Session } from '@supabase/supabase-js'
 
 export default function Upload() {
   const [imageFile, setImageFile] = useState(null)
@@ -67,4 +68,7 @@ export default function Upload() {
       </div>
     </div>
   )
+}
+
+export default function Upload({ session }) {
 }
